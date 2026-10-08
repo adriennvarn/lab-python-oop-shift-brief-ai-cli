@@ -35,14 +35,27 @@ class OllamaChatClient:
             - preserve previous valid history,
             - raise RuntimeError with a clear service-error message.
         """
-        # TODO: Validate the prompt.
-        # TODO: Create and append the user message.
-        # TODO: Call ollama.chat().
-        # TODO: Extract assistant content from the response.
-        # TODO: Append the assistant message after a successful response.
-        # TODO: Return the assistant response text.
-        # TODO: Roll back the failed user message and raise RuntimeError if needed.
-        pass
+        if not prompt.strip():
+            raise ValueError("Prompt cannot be empty.")
+
+        user_message = {
+            "role": "user",
+            "content": prompt.strip(),
+        }
+
+        self.history.append(user_message)
+
+        try:
+            response = ollama.chat(model=self.model_name, messages=self.messages)
+
+            assistant_message = response["message"]
+            self.history.append(assistant_message)
+
+            return assistant_message["content"]
+
+        except Exception as err:
+            self.history.pop()
+            raise RuntimeError(f"AI service request failed: {err}")
 
     def reset(self):
         """
@@ -51,8 +64,7 @@ class OllamaChatClient:
         Requirements:
         - After this method runs, self.history should be an empty list.
         """
-        # TODO: Clear conversation history.
-        pass
+        self.history = []
 
     def message_count(self):
         """
@@ -62,8 +74,7 @@ class OllamaChatClient:
         - Return an integer.
         - Count both user messages and assistant messages.
         """
-        # TODO: Return the number of stored messages.
-        pass
+        return len(self.history)
 
     def get_transcript(self):
         """
@@ -74,5 +85,4 @@ class OllamaChatClient:
         - Do not return the internal self.history list directly.
         - The returned message dictionaries should also be copies.
         """
-        # TODO: Return a copy of the transcript.
-        pass
+        return [item.copy() for item in self.history]

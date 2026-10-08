@@ -24,7 +24,9 @@ class HandoffBriefBuilder:
         """
         # TODO: Validate notes.
         # TODO: Build and return a prompt for a new handoff brief.
-        pass
+        
+        if not notes.strip():
+            raise ValueError
 
     def build_revision_prompt(self, feedback):
         """
