@@ -23,8 +23,8 @@ class HandoffBriefBuilder:
           not in the reusable AI client.
         """
 
-        if not notes.strip():
-            raise ValueError
+        if not notes or not notes.strip():
+            raise ValueError("Shift notes cannot be empty.")
 
         return f"""Build a shift handoff brief from the following notes. Use the required sections below, and do not invent unsupported details. Use \"Unknown\" when details are not provided.\n
         Shift notes: {notes.strip()}
@@ -43,12 +43,12 @@ class HandoffBriefBuilder:
         - Tell the model not to invent unsupported details.
         """
 
-        if not feedback.strip():
-            raise ValueError
+        if not feedback or not feedback.strip():
+            raise ValueError("Revision feedback cannot be empty.")
 
         return f"""
         Revise the last handoff brief using the feedback below. Use the previous brief and keep response to the required sections structure.
-        Do not invent unsupported details. If any details are not provided, use "Uknown".\n
+        Do not invent unsupported details. If any details are not provided, use "Unknown".\n
         Manager feedback: {feedback.strip()}
         Required sections: {"\n".join(self.REQUIRED_SECTIONS)}
         """
@@ -62,7 +62,7 @@ class HandoffBriefBuilder:
         - Return True only when the response contains every required section label.
         - Return False if one or more required sections are missing.
         """
-        if not response_text.strip():
+        if not response_text or not response_text.strip():
             return False
 
         for section in self.REQUIRED_SECTIONS:
@@ -95,10 +95,12 @@ class HandoffBriefBuilder:
         """
 
         brief = self.build_brief_prompt(notes)
-        if not self.is_usable_brief(brief):
-            raise RuntimeError
+        response = ai_client.send(brief)
+        
+        if not self.is_usable_brief(response):
+            raise RuntimeError("AI response did not include required sections.")
 
-        return self.format_brief(brief)
+        return self.format_brief(response)
 
     def revise_brief(self, ai_client, feedback):
         """
@@ -113,7 +115,9 @@ class HandoffBriefBuilder:
         """
         
         revision = self.build_revision_prompt(feedback)
-        if not self.is_usable_brief(revision):
-            raise RuntimeError
+        response = ai_client.send(revision)
         
-        return self.format_brief(revision)
+        if not self.is_usable_brief(response):
+            raise RuntimeError("AI response did not include required sections.")
+        
+        return f"\nRevised Shift Handoff Brief\n{response.strip()}"

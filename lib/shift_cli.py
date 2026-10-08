@@ -27,8 +27,11 @@ class ShiftBriefCLI:
         - Mention that this is a shift handoff brief CLI.
         - Include the available commands.
         """
-        # TODO: Print welcome text and command help.
-        pass
+        print((
+            "Welcome to Shift Brief CLI. \nHere you can formulate and revise briefs based on notes.\n\n"
+            "Type brief to add a new briefing. \nType revise to revise your last briefing with feedback.\n"
+            "Type history to view briefing history. \nType reset to reset conversation.\n"
+            "Type exit or quit to exit the program.\n\n"))
 
     def command_help(self):
         """
@@ -43,8 +46,15 @@ class ShiftBriefCLI:
         - exit
         - quit
         """
-        # TODO: Return a string describing the available commands.
-        pass
+        return (
+            "Commands:\n"
+            "brief <shift notes> - Generate a new brief.\n"
+            "revise <feedback> - Revise last brief.\n"
+            "history - View brief history.\n"
+            "reset - Reset history.\n"
+            "help - View this help message.\n"
+            "exit | quit - Quit the program.\n"
+        )
 
     def handle_command(self, raw_input):
         """
@@ -64,6 +74,34 @@ class ShiftBriefCLI:
         - ValueError should become a readable Input Error.
         - RuntimeError should become a readable Service Error.
         """
+        
+        if not raw_input or not raw_input.strip():
+            print("Input cannot be blank.")
+            return
+        
+        first_word = raw_input.split()[0].lower()
+        
+        try:
+            match first_word:
+                case "brief":
+                    pass
+                case "revise":
+                    pass
+                case "history":
+                    pass
+                case "reset":
+                    pass
+                case "help":
+                    pass
+                case "exit" | "quit":
+                    pass
+                case _:
+                    raise ValueError("Invalid command given.")
+        except RuntimeError as err:
+            print(f"Service error: {err}")
+        except ValueError as err:
+            print(f"Input error: {err}")
+        
         # TODO: Validate raw_input.
         # TODO: Parse the command and payload.
         # TODO: Route supported commands.
