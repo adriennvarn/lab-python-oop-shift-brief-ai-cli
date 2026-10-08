@@ -27,11 +27,8 @@ class ShiftBriefCLI:
         - Mention that this is a shift handoff brief CLI.
         - Include the available commands.
         """
-        print((
-            "Welcome to Shift Brief CLI. \nHere you can formulate and revise briefs based on notes.\n\n"
-            "Type brief to add a new briefing. \nType revise to revise your last briefing with feedback.\n"
-            "Type history to view briefing history. \nType reset to reset conversation.\n"
-            "Type exit or quit to exit the program.\n\n"))
+        print("Welcome to Shift Handoff Brief CLI.\n\n")
+        print(self.command_help())
 
     def command_help(self):
         """
@@ -46,12 +43,15 @@ class ShiftBriefCLI:
         - exit
         - quit
         """
+        
+        # This required the awkward capitalization of "Conversation messages" because the tests
+        # are not case insensitive...
         return (
             "Commands:\n"
             "brief <shift notes> - Generate a new brief.\n"
             "revise <feedback> - Revise last brief.\n"
-            "history - View brief history.\n"
-            "reset - Reset history.\n"
+            "history - View number of Conversation messages.\n"
+            "reset - Reset conversation history.\n"
             "help - View this help message.\n"
             "exit | quit - Quit the program.\n"
         )
@@ -74,39 +74,44 @@ class ShiftBriefCLI:
         - ValueError should become a readable Input Error.
         - RuntimeError should become a readable Service Error.
         """
-        
-        if not raw_input or not raw_input.strip():
-            print("Input cannot be blank.")
-            return
-        
-        first_word = raw_input.split()[0].lower()
-        
         try:
-            match first_word:
+            if not raw_input or not raw_input.strip():
+                raise ValueError("Input cannot be blank.")
+
+            split_input = raw_input.split(maxsplit=1)
+            command = split_input[0]
+            payload = split_input[1] if len(split_input) >= 2 else None
+
+            match command.lower():
                 case "brief":
-                    pass
+                    if not payload:
+                        raise ValueError("Brief must contain shift notes.")
+                    return self.brief_builder.create_brief(self.ai_client, payload)
                 case "revise":
-                    pass
+                    if not payload:
+                        raise ValueError("Revision must contain revision feedback.")
+                    return self.brief_builder.revise_brief(self.ai_client, payload)
                 case "history":
-                    pass
+                    return f"Messages: {self.ai_client.message_count()}"
                 case "reset":
-                    pass
+                    self.ai_client.reset()
+                    return "Conversation reset."
                 case "help":
-                    pass
+                    return self.command_help()
                 case "exit" | "quit":
-                    pass
+                    self.running = False
+                    return "\nGoodbye!\n"
                 case _:
-                    raise ValueError("Invalid command given.")
+                    raise ValueError("Unknown command. Type 'help' to see usage.")
         except RuntimeError as err:
-            print(f"Service error: {err}")
+            return f"Service error: {err}"
         except ValueError as err:
-            print(f"Input error: {err}")
-        
+            return f"Input error: {err}"
+
         # TODO: Validate raw_input.
         # TODO: Parse the command and payload.
         # TODO: Route supported commands.
         # TODO: Return helpful messages for errors and unknown commands.
-        pass
 
     def run(self):
         """
@@ -120,6 +125,13 @@ class ShiftBriefCLI:
         - Print returned messages.
         - Stop cleanly if EOFError occurs.
         """
+
+        self.display_welcome()
+
+        while self.running:
+            response = self.handle_command(input("> "))
+            print(response)
+
         # TODO: Display welcome text.
         # TODO: Run the input loop.
         pass
