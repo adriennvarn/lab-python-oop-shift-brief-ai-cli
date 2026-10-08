@@ -49,7 +49,8 @@ class OllamaChatClient:
             response = ollama.chat(model=self.model_name, messages=self.history)
             
             content = None
-            # check if response is a dictionary, otherwise get attribute until you get to the content
+            # check if response is a dictionary, otherwise get attribute until you get to the content.
+            # Only necessary because the fake client in tests is poorly implemented.
             if isinstance(response, dict):
                 message = response.get("message")
                 if isinstance(message, dict):
@@ -65,10 +66,12 @@ class OllamaChatClient:
             if not isinstance(content, str) or not content.strip():
                 raise RuntimeError("AI service request failed: no usable assistant response")
 
+            # slap that new message into the history and return its content
             assistant_message = {"role": "assistant", "content": content.strip()}
             self.history.append(assistant_message)
             return assistant_message["content"]
         
+        # if anything goes wrong, remove the failed user message and raise an error
         except Exception as err:
             self.history.pop()
             raise RuntimeError(f"AI service request failed: {err}")

@@ -75,11 +75,14 @@ class ShiftBriefCLI:
         - RuntimeError should become a readable Service Error.
         """
         try:
+            # verify input exists
             if not raw_input or not raw_input.strip():
                 raise ValueError("Input cannot be blank.")
 
+            # split input into command word and payload...
             split_input = raw_input.split(maxsplit=1)
             command = split_input[0]
+            # ... if payload exists, that is.
             payload = split_input[1] if len(split_input) >= 2 else None
 
             match command.lower():
@@ -108,11 +111,6 @@ class ShiftBriefCLI:
         except ValueError as err:
             return f"Input error: {err}"
 
-        # TODO: Validate raw_input.
-        # TODO: Parse the command and payload.
-        # TODO: Route supported commands.
-        # TODO: Return helpful messages for errors and unknown commands.
-
     def run(self):
         """
         Run the CLI input loop.
@@ -131,10 +129,6 @@ class ShiftBriefCLI:
         while self.running:
             response = self.handle_command(input("> "))
             print(response)
-
-        # TODO: Display welcome text.
-        # TODO: Run the input loop.
-        pass
 
 
 def main():
